@@ -36,6 +36,7 @@ resources:
     #shared_vpc_host_proj    : < my-shared-vpc-project-name >
 
     controller_machine_type : n1-standard-2
+    #controller_image           : projects/project-name/global/images/image-name
     #controller_disk_type       : pd-standard
     #controller_disk_size_gb    : 50
     #controller_labels          :
@@ -43,6 +44,7 @@ resources:
     #     key2 : value2
     #
     login_machine_type      : n1-standard-2
+    #login_image                : projects/project-name/global/images/image-name
     #login_disk_type            : pd-standard
     #login_disk_size_gb         : 10
     #login_labels               :
@@ -72,6 +74,7 @@ resources:
     partitions :
 
            - name           : small-utility
+             # compute_image  : projects/project-name/global/images/image-name
              machine_type   : n1-standard-2
              max_node_count : 10
              zone           : us-central1-a
@@ -87,9 +90,10 @@ resources:
              # Optional GPU configuration fields
              # gpu_type                   : nvidia-tesla-v100
              # gpu_count                  : 8
-             
-             
+
+
            - name           : ops-compute
+             # compute_image  : projects/project-name/global/images/image-name
              machine_type   : n1-standard-16
              max_node_count : 20
              zone           : us-central1-b

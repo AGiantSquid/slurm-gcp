@@ -69,6 +69,16 @@ optional:
 
 properties:
 
+
+  default_image:
+    type        : string
+    default     : "https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/family/centos-7"
+    description : URL for image
+
+  controller_image:
+    type        : string
+    description : URL for image. If not specified, defaults to default_image
+
   cidr:
     type        : string
     description : RFC1918 subnet to run instances in, eg. 10.10.0.0/16.
@@ -134,6 +144,10 @@ properties:
     description : Whether compute nodes are assigned external IPs or not. If set
                   to false, then the compute nodes will get to the internet
                   through a Cloud NAT gateway.
+
+  login_image:
+    type        : string
+    description : URL for image. If not specified, defaults to default_image
 
   login_machine_type:
     type        : string
@@ -260,6 +274,9 @@ properties:
       - static_node_count
       - zone
       properties :
+        compute_image:
+          type        : string
+          description : URL for image. If not specified, defaults to default_image
 
         machine_type:
           type        : string

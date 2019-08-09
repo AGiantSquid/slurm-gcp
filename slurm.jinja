@@ -85,7 +85,11 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/family/centos-7
+      {% if properties["controller_image"] %}
+        sourceImage: {{ properties["controller_image"] }}
+      {% else %}
+        sourceImage: {{ properties["default_image"] }}
+      {% endif %}
         diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["zone"] }}/diskTypes/{{ properties["controller_disk_type"] }}
         diskSizeGb: {{ properties["controller_disk_size_gb"] }}
 {% if properties['controller_secondary_disk'] %}
@@ -280,7 +284,11 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/family/centos-7
+      {% if properties["login_image"] %}
+        sourceImage: {{ properties["login_image"] }}
+      {% else %}
+        sourceImage: {{ properties["default_image"] }}
+      {% endif %}
         diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["partitions"][i]["zone"] }}/diskTypes/{{ properties["partitions"][i]["compute_disk_type"] }}
         diskSizeGb: {{ properties["partitions"][i]["compute_disk_size_gb"] }}
   {% if (properties ['vpc_subnet'] and properties ['shared_vpc_host_proj'])  %}
@@ -360,7 +368,11 @@ resources:
       boot: true
       autoDelete: true
       initializeParams:
-        sourceImage: https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/family/centos-7
+      {% if properties["partitions"][i]['compute_image'] %}
+        sourceImage: {{ properties["partitions"][i]['compute_image'] }}
+      {% else %}
+        sourceImage: {{ properties["default_image"] }}
+      {% endif %}
         diskType: https://www.googleapis.com/compute/v1/projects/{{ env["project"] }}/zones/{{ properties["partitions"][i]["zone"] }}/diskTypes/{{ properties["partitions"][i]["compute_disk_type"] }}
         diskSizeGb: 10
   {% if (properties ['vpc_subnet'] and properties ['shared_vpc_host_proj'])  %}
