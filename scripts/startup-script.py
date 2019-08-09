@@ -236,13 +236,16 @@ def install_packages():
         hostname = socket.gethostname()
         pid = int( hostname[-6:-4] )
         if PARTITIONS[pid]["gpu_count"]:
-            rpm = "cuda-repo-rhel7-10.0.130-1.x86_64.rpm"
-            subprocess.call("yum -y install kernel-devel-$(uname -r) kernel-headers-$(uname -r)", shell=True)
-            subprocess.call(shlex.split("wget http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/" + rpm))
-            subprocess.call(shlex.split("rpm -i " + rpm))
-            subprocess.call(shlex.split("yum clean all"))
-            subprocess.call(shlex.split("yum -y install cuda"))
-            subprocess.call(shlex.split("nvidia-smi")) # Creates the device files
+            try:
+                subprocess.check_output(["nvidia-smi"])
+            except:
+                rpm = "cuda-repo-rhel7-10.0.130-1.x86_64.rpm"
+                subprocess.call("yum -y install kernel-devel-$(uname -r) kernel-headers-$(uname -r)", shell=True)
+                subprocess.call(shlex.split("wget http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/" + rpm))
+                subprocess.call(shlex.split("rpm -i " + rpm))
+                subprocess.call(shlex.split("yum clean all"))
+                subprocess.call(shlex.split("yum -y install cuda"))
+                subprocess.call(shlex.split("nvidia-smi")) # Creates the device files
 
 #END install_packages()
 
