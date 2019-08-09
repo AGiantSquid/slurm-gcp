@@ -304,6 +304,21 @@ def start_munge():
         subprocess.call(['systemctl', 'start', 'munge'])
 #END start_munge()
 
+def run_custom_install_script(custom_install_script):
+    user_script = "{}/slurm/scripts/{}".format(APPS_DIR, custom_install_script)
+    try:
+        subprocess.call(shlex.split(user_script))
+    except OSError as e:
+        msg = (
+            'Script "{}" was unable to run.'
+            'If you did not modify this file with custom commands, ignore this message.'
+            'If you added content to this file that should have installed, please check the following error.'
+        )
+        print msg
+        print e
+
+#END run_custom_install_script()
+
 def setup_nfs_exports():
 
     f = open('/etc/exports', 'w')
@@ -1068,14 +1083,7 @@ def main():
         setup_modules()
         start_munge()
         install_slurm()
-
-        try:
-            subprocess.call("{}/slurm/scripts/custom-controller-install"
-                            .format(APPS_DIR))
-        except Exception:
-            # Ignore blank files with no shell magic.
-            pass
-
+        run_custom_install_script("custom-controller-install")
         install_controller_service_scripts()
 
         subprocess.call(shlex.split('systemctl enable mariadb'))
@@ -1126,13 +1134,7 @@ def main():
         setup_slurmd_cronjob()
         mount_nfs_vols()
         start_munge()
-
-        try:
-            subprocess.call("{}/slurm/scripts/custom-compute-install"
-                            .format(APPS_DIR))
-        except Exception:
-            # Ignore blank files with no shell magic.
-            pass
+        run_custom_install_script("custom-compute-install")
 
         if CLUSTER_NAME + "-compute-image" in hostname:
 
@@ -1153,14 +1155,7 @@ def main():
     else: # login nodes
         mount_nfs_vols()
         start_munge()
-
-        try:
-            subprocess.call("{}/slurm/scripts/custom-compute-install"
-                            .format(APPS_DIR))
-        except Exception:
-            # Ignore blank files with no shell magic.
-            pass
-
+        run_custom_install_script("custom-compute-install")
 
 #    if CLUSTER_NAME + "-compute-image" not in hostname:
 #        # Wait for the compute image nodes to mark the partition up
