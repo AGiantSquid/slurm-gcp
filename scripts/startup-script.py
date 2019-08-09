@@ -247,6 +247,46 @@ def install_packages():
 #END install_packages()
 
 
+def add_entry_to_fstab(device, mount_point, fs_type="nfs", options="rw,hard,intr", dump_num="0", pass_num="0"):
+    """Adds entry to /etc/fstab  unless an entry for the device already exists."""
+    with open("/etc/fstab", "a+") as fstab_contents:
+        if device in fstab_contents.read():
+            msg = "{} entry already exists in /etc/fstab.".format(device) + \
+                  "Not adding item to file systems table."
+            print msg
+        else:
+            fstab_contents.write("""
+{0}    {1}     {2}      {3}     {4}     {5}
+""".format(device, mount_point, fs_type, options, dump_num, pass_num))
+
+#END add_entry_to_fstab()
+
+
+def add_nfs_entry_to_fstab(machine, directory, mount_point=""):
+    """Adds nfs entry to /etc/fstab unless an entry for the device already exists."""
+    if not mount_point:
+        mount_point = directory
+
+    device = "{}:{}".format(machine, directory)
+    add_entry_to_fstab(device, mount_point)
+
+#END add_nfs_entry_to_fstab()
+
+
+def add_extended_file_system_to_fstab(device, mount_point):
+    """Adds ext4 entry to /etc/fstab unless an entry for the device already exists."""
+    add_entry_to_fstab(
+        device=device,
+        mount_point=mount_point,
+        fs_type="ext4",
+        options="discard,defaults,nofail",
+        dump_num="0",
+        pass_num="2",
+    )
+
+#END add_extended_file_system_to_fstab
+
+
 def setup_munge():
 
     munge_service_patch = "/usr/lib/systemd/system/munge.service"
@@ -279,11 +319,7 @@ WantedBy=multi-user.target""")
     subprocess.call(['systemctl', 'enable', 'munge'])
 
     if (INSTANCE_TYPE != "controller"):
-        f = open('/etc/fstab', 'a')
-        f.write("""
-{1}:{0}    {0}     nfs      rw,hard,intr  0     0
-""".format(MUNGE_DIR, CONTROL_MACHINE))
-        f.close()
+        add_nfs_entry_to_fstab(CONTROL_MACHINE, MUNGE_DIR)
         return
 
     if MUNGE_KEY:
@@ -926,57 +962,36 @@ LD_LIBRARY_PATH=$CUDA_PATH/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 def setup_nfs_apps_vols():
 
-    f = open('/etc/fstab', 'a')
     if not NFS_APPS_SERVER:
         if ((INSTANCE_TYPE != "controller")):
-            f.write("""
-{1}:{0}    {0}     nfs      rw,hard,intr  0     0
-""".format(APPS_DIR, CONTROL_MACHINE))
+            add_nfs_entry_to_fstab(CONTROL_MACHINE, APPS_DIR)
     else:
-        f.write("""
-{1}:{2}    {0}     nfs      rw,hard,intr  0     0
-""".format(APPS_DIR, NFS_APPS_SERVER, NFS_APPS_DIR))
-    f.close()
+        add_nfs_entry_to_fstab(NFS_APPS_SERVER, NFS_APPS_DIR, APPS_DIR)
 
 #END setup_nfs_apps_vols()
 
 def setup_nfs_home_vols():
 
-    f = open('/etc/fstab', 'a')
     if not NFS_HOME_SERVER:
         if ((INSTANCE_TYPE != "controller")):
-            f.write("""
-{0}:/home    /home     nfs      rw,hard,intr  0     0
-""".format(CONTROL_MACHINE))
+            add_nfs_entry_to_fstab(CONTROL_MACHINE, "/home")
     else:
-        f.write("""
-{0}:{1}    /home     nfs      rw,hard,intr  0     0
-""".format(NFS_HOME_SERVER, NFS_HOME_DIR))
-    f.close()
+        add_nfs_entry_to_fstab(NFS_HOME_SERVER, NFS_HOME_DIR, "/home")
+
 
 #END setup_nfs_home_vols()
 
 def setup_nfs_sec_vols():
-    f = open('/etc/fstab', 'a')
-
     if CONTROLLER_SECONDARY_DISK:
         if ((INSTANCE_TYPE != "controller")):
-            f.write("""
-{1}:{0}    {0}     nfs      rw,hard,intr  0     0
-""".format(SEC_DISK_DIR, CONTROL_MACHINE))
-    f.close()
+            add_nfs_entry_to_fstab(CONTROL_MACHINE, SEC_DISK_DIR)
 
 #END setup_nfs_sec_vols()
 
 def setup_secondary_disks():
 
     subprocess.call(shlex.split("sudo mkfs.ext4 -m 0 -F -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb"))
-    f = open('/etc/fstab', 'a')
-
-    f.write("""
-/dev/sdb    {0}  ext4    discard,defaults,nofail  0  2
-""".format(SEC_DISK_DIR))
-    f.close()
+    add_extended_file_system_to_fstab("/dev/sdb", SEC_DISK_DIR)
 
 #END setup_secondary_disks()
 
