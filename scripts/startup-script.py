@@ -52,7 +52,7 @@ SEC_DISK_DIR      = '/mnt/disks/sec'
 #PREEMPTIBLE       = @PREEMPTIBLE@
 SUSPEND_TIME      = @SUSPEND_TIME@
 RESUME_TIMEOUT    = 300
-SUSPEND_TIMEOUT   = 300 
+SUSPEND_TIMEOUT   = 300
 PARTITIONS        = @PARTITIONS@
 
 DEF_PART_NAME   = "debug"
@@ -1143,7 +1143,7 @@ def main():
                 "{}/bin/scontrol update partitionname={} state=up".format(
                     CURR_SLURM_DIR, PARTITIONS[pid]["name"])))
 
-            
+
             subprocess.call(shlex.split("gcloud compute instances "
                                         "stop {} --zone {} --quiet".format(
                                             hostname, PARTITIONS[pid]["zone"])))
